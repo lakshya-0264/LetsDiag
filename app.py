@@ -14,37 +14,46 @@ if not API_KEY:
 API_URL = "https://api.perplexity.ai/chat/completions"
 
 def get_medicine_info(medicine_name):
-    """Fetch drug info from RxNav API, including description and a Wikipedia link."""
+    """Fetch drug info from RxNav API; fallback to Wikipedia summary if RxNav lacks description."""
     info = {
         "name": medicine_name,
         "description": "No description available.",
-        "link": f"https://en.wikipedia.org/wiki/{medicine_name.capitalize()}"
+        "link": f"https://en.wikipedia.org/wiki/{medicine_name.replace(' ', '_').capitalize()}"
     }
-    # Step 1: Get RxCUI from RxNav
-    url = f"https://rxnav.nlm.nih.gov/REST/drugs.json?name={medicine_name}"
-    resp = requests.get(url)
-    if resp.status_code == 200:
-        data = resp.json()
-        try:
-            concept_group = data['drugGroup']['conceptGroup']
+
+    try:
+        # Step 1: Get RxCUI
+        url = f"https://rxnav.nlm.nih.gov/REST/drugs.json?name={medicine_name}"
+        resp = requests.get(url)
+        if resp.status_code == 200:
+            data = resp.json()
+            concept_group = data['drugGroup'].get('conceptGroup', [])
             if concept_group:
                 concept = concept_group[0]['conceptProperties'][0]
                 info['name'] = concept.get("synonym", medicine_name)
                 rxcui = concept.get("rxcui")
-                # Step 2: Get description from RxNav (if available)
+
+                # Step 2: Get description from RxNav
                 if rxcui:
                     desc_url = f"https://rxnav.nlm.nih.gov/REST/rxcui/{rxcui}/properties.json"
                     desc_resp = requests.get(desc_url)
                     if desc_resp.status_code == 200:
-                        desc_data = desc_resp.json()
-                        prop = desc_data.get("properties", {})
-                        if "synonym" in prop:
-                            info["name"] = prop["synonym"]
-                        if "definition" in prop and prop["definition"]:
+                        prop = desc_resp.json().get("properties", {})
+                        if "definition" in prop:
                             info["description"] = prop["definition"]
-        except Exception:
-            pass
+
+        # Fallback to Wikipedia summary if no RxNav description
+        if info["description"] == "No description available.":
+            wiki_resp = requests.get(f"https://en.wikipedia.org/api/rest_v1/page/summary/{medicine_name.replace(' ', '_')}")
+            if wiki_resp.status_code == 200:
+                wiki_data = wiki_resp.json()
+                if 'extract' in wiki_data:
+                    info['description'] = wiki_data['extract']
+    except Exception as e:
+        print(f"Error fetching info for {medicine_name}: {e}")
+
     return info
+
 
 
 def recommend_medicine(symptoms):
