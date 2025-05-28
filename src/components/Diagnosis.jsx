@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function Diagnosis() {
   const [symptoms, setSymptoms] = useState("");
   const [medicines, setMedicines] = useState(null);
@@ -19,7 +21,7 @@ function Diagnosis() {
     setLoading(true);
     setVisibleWiki({});
     try {
-      const response = await axios.post("/api/recommend", { symptoms });
+      const response = await axios.post(`${BASE_URL}/api/recommend`, { symptoms });
       setMedicines(response.data.medicines);
     } catch (err) {
       setError("Could not fetch recommendations.");
