@@ -9,8 +9,9 @@ function Footer() {
         rel="noopener noreferrer"
         className="underline hover:text-white"
       >
-        Lakshya Singhal
+        Lakshya Singhal 
       </a>
+      {" "} & Samarth Garg
     </footer>
   );
 }
