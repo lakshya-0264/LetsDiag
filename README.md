@@ -17,3 +17,5 @@ If you are developing a production application, we recommend using TypeScript wi
 - Run command in two separate Terminal as:
   - In one terminal : npm install -> npm run dev
   - In other Terminal : pip install flask_cors -> python app.py
+ 
+- Flask Backend server: https://letsdiag-flaskserver.onrender.com
