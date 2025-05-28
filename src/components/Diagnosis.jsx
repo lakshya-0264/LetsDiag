@@ -86,7 +86,12 @@ function Diagnosis() {
                   >
                     {med.name}
                   </a>
-                  {med.description && <p>{med.description}</p>}
+            
+                  {/* Conditionally render description */}
+                  {med.description?.trim() && (
+                    <p>{med.description}</p>
+                  )}
+            
                   <button
                     onClick={() => toggleWiki(idx)}
                     className="text-sm text-amber-500 underline w-fit mt-1 hover:text-amber-700"
@@ -94,7 +99,7 @@ function Diagnosis() {
                     {visibleWiki[idx] ? "Hide Wikipedia" : "View Wikipedia"}
                   </button>
                 </div>
-
+            
                 <AnimatePresence>
                   {visibleWiki[idx] && (
                     <motion.div
